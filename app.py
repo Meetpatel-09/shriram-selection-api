@@ -4,16 +4,38 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 mysql = MySQL(app)
+import os
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'JackOTech@0078'
 app.config['MYSQL_DB'] = 'shri_ram_selection'
 
+uploads_dir = os.path.join(app.instance_path, 'uploads')
+# os.makedirs(uploads_dir, exists_ok=True)
+
+# app.config['MYSQL_HOST'] = 'aws.connect.psdb.cloud'
+# app.config['MYSQL_USER'] = 'ugm3jqlhy86yv4p2r281'
+# app.config['MYSQL_PASSWORD'] = 'pscale_pw_5A2RYV89OSU1vEyzWCjevwDlOyh92SnJQiqDTJR5Mki'
+# app.config['MYSQL_DB'] = 'learning-flutter-v2'
+# app.config['OPTIONS'] = 'learning-flutter-v2'
+# app.config['MYSQL_DB'] = {'ssl': True}
+
 # Delete => Delete Data
 # GET => Select Data
 # POST => Insert Data
 # PUT => Update Data
+@app.route("/product_image", methods=["POST"])
+def process_image():
+    file = request.files['image']
+    product_id = request.form['prodcuct_id']
+    # Read the image via file.stream
+    # img = Image.open(file.stream)
+    # return 'home page'
+    path = os.path.join(uploads_dir, file.filename)
+    file.save(path)
+    # cur = mysql.connection.cursor()
+    return jsonify({'msg': 'success', 'path': path, 'product_id': product_id})
 
 @app.route('/',methods=['DELETE','GET','POST','PUT','PATCH', 'SEARCH'])
 def home():
@@ -47,8 +69,8 @@ def customer():
             # print(users)
             data = []
             for user in users:
-                print(user[0])
-                print(data)
+                # print(user[0])
+                # print(data)
                 enter = {
                     "customer_id" : user[0], 
                     "first_name" : user[1],
@@ -210,12 +232,18 @@ def product():
                     "sub_category" : user[8],
                     "product_availability" : user[9],
                     "product_highlight" : user[10],
-                    "remark" : user[11]
+                    "remark" : user[11],
+                    "image": [
+                        "image1.png",
+                        "image2.png"
+                    ]
                 }
+
+                
                 data.append(enter)
                 count = count + 1
 
-            return jsonify({"data": data})
+            return jsonify({"products": data})
         
         case "POST":    
             cur = mysql.connection.cursor()
